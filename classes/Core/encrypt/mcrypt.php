@@ -22,12 +22,14 @@ class Core_Encrypt_Mcrypt extends Core_Engine {
 		$config_reader->load('encryption');
 
 		Kohana::$config->attach($config_reader);
-		
+
 		$config = Kohana::$config->load('encryption.mcrypt');
-		
-		if (!isset($config['key']))
+
+		if (!isset($config['key']) OR mb_strlen($config['key'], '8bit') != 32)
 		{
-			throw new Kohana_Exception(__CLASS__ . ' key is not set');
+			throw new Kohana_Exception(__CLASS__ . ' key is not set or has improper length, :length characters key required', array(
+		':length' => 32
+			));
 		}
 
 		if (!isset($config['mode']))
