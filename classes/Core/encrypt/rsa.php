@@ -6,7 +6,7 @@ defined('SYSPATH') or die('No direct script access.');
  * RSA key encryption
  * @author Piotr Gołasz <piotr.golasz@etendard.pl>
  */
-class Core_Encrypt_Rsa extends Core_Engine {
+class Core_Encrypt_Rsa extends Core_Encrypt_Engine {
 
 	/**
 	 * Available hash algorithms

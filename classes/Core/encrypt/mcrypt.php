@@ -6,7 +6,7 @@ defined('SYSPATH') or die('No direct script access.');
  * MCRYPT encryption
  * Exact copy of Kohana_Encrypt
  */
-class Core_Encrypt_Mcrypt extends Core_Engine {
+class Core_Encrypt_Mcrypt extends Core_Encrypt_Engine {
 
 	private $_mode;
 	private $_rand = NULL;

@@ -2,7 +2,7 @@
 
 defined('SYSPATH') or die('No direct script access.');
 
-abstract class Core_Engine {
+abstract class Core_Encrypt_Engine {
 
 	private $_key;
 	protected $_cipher;

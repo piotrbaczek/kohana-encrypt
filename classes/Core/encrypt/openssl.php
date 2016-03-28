@@ -7,7 +7,7 @@ defined('SYSPATH') or die('No direct script access.');
  * @link https://github.com/laravel/framework/blob/5.2/src/Illuminate/Encryption/Encrypter.php
  * @author Laravel Team
  */
-class Core_Encrypt_Openssl extends Core_Engine {
+class Core_Encrypt_Openssl extends Core_Encrypt_Engine {
 
 	/**
 	 * Use only hashes without collisions
