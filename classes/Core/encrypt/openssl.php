@@ -26,6 +26,12 @@ class Core_Encrypt_Openssl extends Core_Engine {
 	 */
 	public function __construct()
 	{
+		$config_reader = new Kohana_Config_File_Reader('certificates');
+
+		$config_reader->load('encryption');
+
+		Kohana::$config->attach($config_reader);
+		
 		$config = Kohana::$config->load('encryption.openssl');
 
 		if (!isset($config['cipher']))

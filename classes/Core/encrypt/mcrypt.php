@@ -17,7 +17,14 @@ class Core_Encrypt_Mcrypt extends Core_Engine {
 	 */
 	public function __construct()
 	{
+		$config_reader = new Kohana_Config_File_Reader('certificates');
+
+		$config_reader->load('encryption');
+
+		Kohana::$config->attach($config_reader);
+		
 		$config = Kohana::$config->load('encryption.mcrypt');
+		
 		if (!isset($config['key']))
 		{
 			throw new Kohana_Exception(__CLASS__ . ' key is not set');
