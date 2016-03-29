@@ -35,8 +35,7 @@ Ypw0m01hAod0LVAtFOK3pAmd6kYLXyL7DjkAR7/m5KZemuEvkrBt5A==
 -----END RSA PRIVATE KEY-----'
 	),
 	'mcrypt' => array(
-		'cipher' => MCRYPT_RIJNDAEL_128,
-		'mode' => MCRYPT_MODE_NOFB,
-		'key' => 'TrueRandom32-CharactersString...'
+		'key' => 'TrueRandom32-CharactersString...',
+		'hash' => 'sha512'
 	)
 );

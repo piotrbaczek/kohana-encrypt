@@ -3,13 +3,16 @@
 defined('SYSPATH') or die('No direct script access.');
 
 /**
- * MCRYPT encryption
- * Exact copy of Kohana_Encrypt
+ * AES-128-CBC and AES-256-CBC port from Laravel 5.2
+ * using MCRYPT
+ * @link https://github.com/laravel/framework/blob/5.2/src/Illuminate/Encryption/Encrypter.php
+ * @author Laravel Team
  */
 class Core_Encrypt_Mcrypt extends Core_Encrypt_Engine {
 
+	const HASHES = array('sha224', 'sha256', 'sha384', 'sha512');
+
 	private $_mode;
-	private $_rand = NULL;
 
 	/**
 	 * Constructor
@@ -31,22 +34,25 @@ class Core_Encrypt_Mcrypt extends Core_Encrypt_Engine {
 		':length' => 32
 			));
 		}
-
-		if (!isset($config['mode']))
+		else
 		{
-			// Add the default mode
-			$config['mode'] = MCRYPT_MODE_NOFB;
+			$this->_key = (String) $config['key'];
 		}
 
-		if (!isset($config['cipher']))
+		if (!isset($config['hash']) OR ! in_array($config['hash'], self::HASHES))
 		{
-			// Add the default cipher
-			$config['cipher'] = MCRYPT_RIJNDAEL_128;
+			throw new Kohana_Exception(__CLASS__ . ' hash must be one of the provided :ciphers', array(
+		':ciphers' => json_encode(self::HASHES)
+			));
+		}
+		else
+		{
+			$this->_hash = (String) $config['hash'];
 		}
 
-		$this->_key = (String) $config['key'];
-		$this->_cipher = (String) $config['cipher'];
-		$this->_mode = (String) $config['mode'];
+
+		$this->_cipher = MCRYPT_RIJNDAEL_128;
+		$this->_mode = MCRYPT_MODE_CBC;
 	}
 
 	/**
@@ -59,35 +65,76 @@ class Core_Encrypt_Mcrypt extends Core_Encrypt_Engine {
 	}
 
 	/**
+	 * Hash result with set hash
+	 * @param String $iv
+	 * @param String $value
+	 * @return String
+	 */
+	protected function hash($iv, $value)
+	{
+		return hash_hmac($this->_hash, $iv . $value, $this->_key);
+	}
+
+	protected function getJsonPayload($payload)
+	{
+		$payload = json_decode(base64_decode($payload), true);
+		// If the payload is not valid JSON or does not have the proper keys set we will
+		// assume it is invalid and bail out of the routine since we will not be able
+		// to decrypt the given value. We'll also check the MAC for this encryption.
+		if (!$payload || $this->invalidPayload($payload))
+		{
+			return FALSE;
+		}
+		if (!$this->validMac($payload))
+		{
+			return FALSE;
+		}
+		return $payload;
+	}
+
+	/**
+	 * Check if payload is correct
+	 * @param array $data
+	 * @return boolean
+	 */
+	protected function invalidPayload($data)
+	{
+		return !is_array($data) || !isset($data['iv']) || !isset($data['value']) || !isset($data['mac']);
+	}
+
+	/**
+	 * Validate MAC for payload
+	 * @param String $payload
+	 * @return boolean
+	 */
+	protected function validMac(array $payload)
+	{
+		$bytes = mcrypt_create_iv($this->getIvSize(), MCRYPT_RAND);
+		$calcMac = hash_hmac($this->_hash, $this->hash($payload['iv'], $payload['value']), $bytes, true);
+		return hash_equals(hash_hmac($this->_hash, $payload['mac'], $bytes, true), $calcMac);
+	}
+
+	/**
 	 * Decrypts given data with key
 	 * @param String $ciphertext
 	 * @return String
 	 */
 	public function decode($ciphertext)
 	{
-		// Convert the data back to binary
-		$data = base64_decode($ciphertext, TRUE);
+		$payload = $this->getJsonPayload($ciphertext);
 
-		if (!$data)
+		if ($payload === FALSE)
 		{
-			// Invalid base64 data
 			return FALSE;
 		}
 
-		// Extract the initialization vector from the data
-		$iv = substr($data, 0, $this->getIvSize());
-
-		if ($this->getIvSize() !== strlen($iv))
+		$iv = base64_decode($payload['iv']);
+		$decrypted = rtrim(mcrypt_decrypt($this->_cipher, $this->_key, base64_decode($payload['value']), $this->_mode, $iv), "\0"); //openssl_decrypt($payload['value'], $this->_cipher, $this->_key, 0, $iv);
+		if ($decrypted === false)
 		{
-			// The iv is not the expected size
 			return FALSE;
 		}
-
-		// Remove the iv from the data
-		$data = substr($data, $this->getIvSize());
-
-		// Return the decrypted data, trimming the \0 padding bytes from the end of the data
-		return rtrim(mcrypt_decrypt($this->_cipher, $this->_key, $data, $this->_mode, $iv), "\0");
+		return unserialize($decrypted);
 	}
 
 	/**
@@ -97,49 +144,26 @@ class Core_Encrypt_Mcrypt extends Core_Encrypt_Engine {
 	 */
 	public function encode($message)
 	{
-		// Set the rand type if it has not already been set
-		if ($this->_rand === NULL)
+		if (!function_exists('mcrypt_create_iv'))
 		{
-			if (Kohana::$is_windows)
-			{
-				// Windows only supports the system random number generator
-				$this->_rand = MCRYPT_RAND;
-			}
-			else
-			{
-				if (defined('MCRYPT_DEV_URANDOM'))
-				{
-					// Use /dev/urandom
-					$this->_rand = MCRYPT_DEV_URANDOM;
-				}
-				elseif (defined('MCRYPT_DEV_RANDOM'))
-				{
-					// Use /dev/random
-					$this->_rand = MCRYPT_DEV_RANDOM;
-				}
-				else
-				{
-					// Use the system random number generator
-					$this->_rand = MCRYPT_RAND;
-				}
-			}
+			throw new Kohana_Exception('MCRYPT must be installed for ' . __CLASS__ . ' to work. Install it on your machine and try again.');
 		}
-
-		if ($this->_rand === MCRYPT_RAND)
+		$iv = mcrypt_create_iv($this->getIvSize(), MCRYPT_RAND);
+		$value = base64_encode(mcrypt_encrypt($this->_cipher, $this->_key, serialize($message), $this->_mode, $iv));
+		if ($value === false)
 		{
-			// The system random number generator must always be seeded each
-			// time it is used, or it will not produce true random results
-			mt_srand();
+			return FALSE;
 		}
-
-		// Create a random initialization vector of the proper size for the current cipher
-		$iv = mcrypt_create_iv($this->getIvSize(), $this->_rand);
-
-		// Encrypt the data using the configured options and generated iv
-		$data = mcrypt_encrypt($this->_cipher, $this->_key, $message, $this->_mode, $iv);
-
-		// Use base64 encoding to convert to a string
-		return base64_encode($iv . $data);
+		// Once we have the encrypted value we will go ahead base64_encode the input
+		// vector and create the MAC for the encrypted value so we can verify its
+		// authenticity. Then, we'll JSON encode the data in a "payload" array.
+		$mac = $this->hash($iv = base64_encode($iv), $value);
+		$json = json_encode(compact('iv', 'value', 'mac'));
+		if (!is_string($json))
+		{
+			return FALSE;
+		}
+		return base64_encode($json);
 	}
 
 }

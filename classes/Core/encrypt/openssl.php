@@ -43,7 +43,7 @@ class Core_Encrypt_Openssl extends Core_Encrypt_Engine {
 
 		if (!isset($config['hash']) OR ! in_array($config['hash'], self::HASHES))
 		{
-			throw new Kohana_Exception(__CLASS__ . ' hash must be one of thep provided :ciphers', array(
+			throw new Kohana_Exception(__CLASS__ . ' hash must be one of the provided :ciphers', array(
 		':ciphers' => self::HASHES
 			));
 		}
