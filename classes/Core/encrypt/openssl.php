@@ -31,7 +31,7 @@ class Core_Encrypt_Openssl extends Core_Encrypt_Engine {
 		$config_reader->load('encryption');
 
 		Kohana::$config->attach($config_reader);
-		
+
 		$config = Kohana::$config->load('encryption.openssl');
 
 		if (!isset($config['cipher']))
@@ -144,7 +144,7 @@ class Core_Encrypt_Openssl extends Core_Encrypt_Engine {
 	 */
 	protected function validMac(array $payload)
 	{
-		$bytes = openssl_random_pseudo_bytes(16);
+		$bytes = openssl_random_pseudo_bytes($this->getIvSize());
 		$calcMac = hash_hmac($this->_hash, $this->hash($payload['iv'], $payload['value']), $bytes, true);
 		return hash_equals(hash_hmac($this->_hash, $payload['mac'], $bytes, true), $calcMac);
 	}
