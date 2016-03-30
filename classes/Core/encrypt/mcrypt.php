@@ -108,6 +108,43 @@ class Core_Encrypt_Mcrypt extends Core_Encrypt_Engine {
 		return hash_equals(hash_hmac($this->_hash, $payload['mac'], $bytes, true), $calcMac);
 	}
 
+	private function pkcs7pad($plaintext, $blocksize)
+	{
+		$padsize = $blocksize - (strlen($plaintext) % $blocksize);
+		return $plaintext . str_repeat(chr($padsize), $padsize);
+	}
+
+	private function pkcs7unpad($padded, $blocksize)
+	{
+		$l = strlen($padded);
+
+		if ($l % $blocksize != 0)
+		{
+			throw new Exception("Padded plaintext cannot be divided by the block size");
+		}
+
+		$padsize = ord($padded[$l - 1]);
+
+		if ($padsize === 0)
+		{
+			throw new Exception("Zero padding found instead of PKCS#7 padding");
+		}
+
+		if ($padsize > $blocksize)
+		{
+			throw new Exception("Incorrect amount of PKCS#7 padding for blocksize");
+		}
+
+		// check the correctness of the padding bytes by counting the occurance
+		$padding = substr($padded, -1 * $padsize);
+		if (substr_count($padding, chr($padsize)) != $padsize)
+		{
+			throw new Exception("Invalid PKCS#7 padding encountered");
+		}
+
+		return substr($padded, 0, $l - $padsize);
+	}
+
 	/**
 	 * Decrypts given data with key
 	 * @param String $ciphertext
@@ -128,7 +165,8 @@ class Core_Encrypt_Mcrypt extends Core_Encrypt_Engine {
 		{
 			return FALSE;
 		}
-		return unserialize($decrypted);
+
+		return unserialize($this->pkcs7unpad($decrypted, mcrypt_get_block_size($this->_cipher, $this->_mode)));
 	}
 
 	/**
@@ -142,8 +180,9 @@ class Core_Encrypt_Mcrypt extends Core_Encrypt_Engine {
 		{
 			throw new Kohana_Exception('MCRYPT must be installed for ' . __CLASS__ . ' to work. Install it on your machine and try again.');
 		}
+
 		$iv = mcrypt_create_iv($this->getIvSize(), MCRYPT_RAND);
-		$value = base64_encode(mcrypt_encrypt($this->_cipher, $this->_key, serialize($message), $this->_mode, $iv));
+		$value = base64_encode(mcrypt_encrypt($this->_cipher, $this->_key, $this->pkcs7pad(serialize($message), mcrypt_get_block_size($this->_cipher, $this->_mode)), $this->_mode, $iv));
 		if ($value === false)
 		{
 			return FALSE;
