@@ -108,38 +108,52 @@ class Core_Encrypt_Mcrypt extends Core_Encrypt_Engine {
 		return hash_equals(hash_hmac($this->_hash, $payload['mac'], $bytes, true), $calcMac);
 	}
 
+	/**
+	 * PKCS7 Padding
+	 * @param String $plaintext
+	 * @param int $blocksize
+	 * @link http://stackoverflow.com/questions/7314901/how-to-add-remove-pkcs7-padding-from-an-aes-encrypted-string
+	 * @return String
+	 */
 	private function pkcs7pad($plaintext, $blocksize)
 	{
 		$padsize = $blocksize - (strlen($plaintext) % $blocksize);
 		return $plaintext . str_repeat(chr($padsize), $padsize);
 	}
 
+	/**
+	 * PKCS7 padding
+	 * @param String $padded
+	 * @param int $blocksize
+	 * @link http://stackoverflow.com/questions/7314901/how-to-add-remove-pkcs7-padding-from-an-aes-encrypted-string
+	 * @return String, boolean
+	 */
 	private function pkcs7unpad($padded, $blocksize)
 	{
 		$l = strlen($padded);
 
 		if ($l % $blocksize != 0)
 		{
-			throw new Exception("Padded plaintext cannot be divided by the block size");
+			return FALSE;
 		}
 
 		$padsize = ord($padded[$l - 1]);
 
 		if ($padsize === 0)
 		{
-			throw new Exception("Zero padding found instead of PKCS#7 padding");
+			return FALSE;
 		}
 
 		if ($padsize > $blocksize)
 		{
-			throw new Exception("Incorrect amount of PKCS#7 padding for blocksize");
+			return FALSE;
 		}
 
 		// check the correctness of the padding bytes by counting the occurance
 		$padding = substr($padded, -1 * $padsize);
 		if (substr_count($padding, chr($padsize)) != $padsize)
 		{
-			throw new Exception("Invalid PKCS#7 padding encountered");
+			return FALSE;
 		}
 
 		return substr($padded, 0, $l - $padsize);
@@ -166,7 +180,14 @@ class Core_Encrypt_Mcrypt extends Core_Encrypt_Engine {
 			return FALSE;
 		}
 
-		return unserialize($this->pkcs7unpad($decrypted, mcrypt_get_block_size($this->_cipher, $this->_mode)));
+		$unpadded = $this->pkcs7unpad($decrypted, mcrypt_get_block_size($this->_cipher, $this->_mode));
+
+		if ($unpadded === false)
+		{
+			return FALSE;
+		}
+
+		return unserialize($unpadded);
 	}
 
 	/**
