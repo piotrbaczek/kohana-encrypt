@@ -30,6 +30,15 @@ $encrypt = Encryption::instance(Encryption::ENGINE_RSA);
 echo $encrypt->encode('This is my secret');
 ```
 
+If you want to use this as default Encryption in your application,
+then add new file applications/classes/encrypt.php containing:
+
+```sh
+<?php defined('SYSPATH') or die('No direct access allowed.');
+
+public class Encrypt extends Encryption{}
+```
+
 License
 ----
 
