@@ -76,18 +76,7 @@ class Core_Encrypt_Openssl extends Core_Encrypt_Engine {
 	public static function supported($key, $cipher)
 	{
 		$length = mb_strlen($key, '8bit');
-		switch ($cipher) {
-			case 'aes-128-cbc':
-				return $length === 16;
-			case 'aes-256-cbc':
-				return $length === 32;
-			case 'aes-128-gcm':
-				return $length === 16;
-			case 'aes-256-gcm':
-				return $length === 32;
-			default:
-				return FALSE;
-		}
+		return ($cipher === 'AES-128-CBC' && $length === 16) || ($cipher === 'AES-256-CBC' && $length === 32);
 	}
 
 	/**
@@ -96,15 +85,7 @@ class Core_Encrypt_Openssl extends Core_Encrypt_Engine {
 	 */
 	protected function getIvSize()
 	{
-		if ($this->_cipher == 'aes-128-cbc' OR $this->_cipher == 'aes-256-cbc')
-		{
-			return 16;
-		}
-		else
-		{
-			//for aes-128-gcm and aes-256-gcm
-			return 12;
-		}
+		return 16;
 	}
 
 	/**

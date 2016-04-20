@@ -14,7 +14,7 @@ Add this line to Kohana::init in your bootstrap.php:
 ```
 
 ### Usage
-* OPENSSL (AES-256-CBC, AES-128-CBC, AES-256-GCM, AES-128-GCM)
+* OPENSSL (AES-256-CBC or AES-128-CBC)
 ```sh
 $encrypt = Encryption::instance();
 echo $encrypt->encode('This is my secret');
