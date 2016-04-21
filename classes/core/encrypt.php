@@ -35,7 +35,7 @@ abstract class Core_Encrypt {
 
 	/**
 	 * Constructor is private
-	 * @author Piotr Gołasz <piotr.golasz@etendard.pl>
+	 * @author Piotr Gołasz <pgolasz@gmail.com>
 	 */
 	private function __construct()
 	{
