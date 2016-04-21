@@ -8,13 +8,13 @@ Uses AES-256-CBC and AES-128-CBC, and user public and private keys with RSA.
 $ cd modules
 $ git clone [git-repo-url]
 ```
-Add this line to Kohana::init in your bootstrap.php:
+Add this line to Kohana::modules in your bootstrap.php:
 ```sh
 'kohana-encrypt' => MODPATH . 'kohana-encrypt'
 ```
 
 ### Usage
-* OPENSSL (AES-256-CBC, AES-128-CBC, AES-256-GCM, AES-128-GCM)
+* OPENSSL (AES-256-CBC or AES-128-CBC)
 ```sh
 $encrypt = Encryption::instance();
 echo $encrypt->encode('This is my secret');
@@ -28,6 +28,15 @@ echo $encrypt->encode('This is my secret');
 ```sh
 $encrypt = Encryption::instance(Encryption::ENGINE_RSA);
 echo $encrypt->encode('This is my secret');
+```
+
+If you want to use this as default Encryption in your application,
+then add new file applications/classes/encrypt.php containing:
+
+```sh
+<?php defined('SYSPATH') or die('No direct access allowed.');
+
+public class Encrypt extends Encryption{}
 ```
 
 License

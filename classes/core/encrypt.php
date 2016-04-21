@@ -16,21 +16,14 @@ abstract class Core_Encrypt {
 	const ENGINE_RSA = 'rsa';
 
 	/**
-	 * Create instance of encryption class, returns OPENSSL as default
+	 * Create instance of encryption class
 	 * @param String $engine one of Encryption::ENGINE_ constants
 	 * @return \class
 	 */
 	public static function instance($engine = self::ENGINE_OPENSSL)
 	{
-		if (in_array($engine, array(self::ENGINE_MCRYPT, self::ENGINE_OPENSSL, self::ENGINE_RSA)))
-		{
-			$class = 'Core_Encrypt_' . $engine;
-			return new $class();
-		}
-		else
-		{
-			return new Core_Encrypt_Openssl();
-		}
+		$class = 'Core_Encrypt_' . $engine;
+		return new $class();
 	}
 
 	/**

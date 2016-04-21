@@ -3,7 +3,7 @@
 return array(
 	'openssl' => array(
 		'hash' => 'sha512',
-		'cipher' => 'aes-256-gcm',
+		'cipher' => 'AES-256-CBC',
 		'key' => 'TrueRandom32-CharactersString...'
 	),
 	'rsa' => array(
