@@ -8,7 +8,7 @@ Uses AES-256-CBC and AES-128-CBC, and user public and private keys with RSA.
 $ cd modules
 $ git clone [git-repo-url]
 ```
-Add this line to Kohana::init in your bootstrap.php:
+Add this line to Kohana::modules in your bootstrap.php:
 ```sh
 'kohana-encrypt' => MODPATH . 'kohana-encrypt'
 ```
