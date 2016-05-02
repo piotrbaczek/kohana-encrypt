@@ -12,7 +12,6 @@ abstract class Core_Encrypt {
 	 * Available Engines
 	 */
 	const ENGINE_OPENSSL = 'openssl';
-	const ENGINE_MCRYPT = 'mcrypt';
 	const ENGINE_RSA = 'rsa';
 
 	/**
@@ -22,6 +21,11 @@ abstract class Core_Encrypt {
 	 */
 	public static function instance($engine = self::ENGINE_OPENSSL)
 	{
+		if (!in_array($engine, [self::ENGINE_OPENSSL, self::ENGINE_RSA]))
+		{
+			$engine = self::ENGINE_OPENSSL;
+		}
+
 		$class = 'Core_Encrypt_' . $engine;
 		return new $class();
 	}

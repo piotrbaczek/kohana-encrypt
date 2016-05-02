@@ -33,9 +33,5 @@ PqAdwlAyksBwm4aPHTOr/prwYt7C7J5+KVMZ1A4pvcJk66Fb8TdfVTfP5VnEofsc
 JuU4qbDzE4V2flRsvUzJkyosBjb9ZbCEpB4LW9ageWLSeXsd0F8iVD3x4zDbOJdX
 Ypw0m01hAod0LVAtFOK3pAmd6kYLXyL7DjkAR7/m5KZemuEvkrBt5A==
 -----END RSA PRIVATE KEY-----'
-	),
-	'mcrypt' => array(
-		'key' => 'TrueRandom32-CharactersString...',
-		'hash' => 'sha512'
 	)
 );
