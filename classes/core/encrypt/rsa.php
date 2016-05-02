@@ -93,15 +93,53 @@ class Core_Encrypt_Rsa extends Core_Encrypt_Engine {
 	}
 
 	/**
+	 * Decodes and splits the result into data, IV and MAC
+	 * @param JSON $payload
+	 * @return boolean
+	 */
+	protected function getJsonPayload($payload)
+	{
+		$payload = json_decode(base64_decode($payload), true);
+		// If the payload is not valid JSON or does not have the proper keys set we will
+		// assume it is invalid and bail out of the routine since we will not be able
+		// to decrypt the given value. We'll also check the MAC for this encryption.
+		if (!$payload || $this->invalidPayload($payload))
+		{
+			return FALSE;
+		}
+		if (!$this->verify($payload['value'], $payload['sgn']))
+		{
+			return FALSE;
+		}
+		return $payload;
+	}
+
+	/**
+	 * Check if payload is correct
+	 * @param array $data
+	 * @return boolean
+	 */
+	protected function invalidPayload($data)
+	{
+		return !is_array($data) || !isset($data['value']) || !isset($data['sgn']);
+	}
+
+	/**
 	 * Decrypts given data with key
 	 * @param String $ciphertext
 	 * @return String
 	 */
 	public function decode($ciphertext)
 	{
+		$payload = $this->getJsonPayload($ciphertext);
+		if ($payload === FALSE)
+		{
+			return FALSE;
+		}
 		try
 		{
-			openssl_private_decrypt(base64_decode($ciphertext), $decrypted, $this->_private, OPENSSL_PKCS1_OAEP_PADDING);
+			$decrypted = NULL;
+			openssl_private_decrypt(base64_decode($payload['value']), $decrypted, $this->_private, OPENSSL_PKCS1_OAEP_PADDING);
 			return $decrypted;
 		}
 		catch (Exception $ex)
@@ -119,8 +157,15 @@ class Core_Encrypt_Rsa extends Core_Encrypt_Engine {
 	{
 		try
 		{
+			$crypted = NULL;
 			openssl_public_encrypt($message, $crypted, $this->_public, OPENSSL_PKCS1_OAEP_PADDING);
-			return base64_encode($crypted);
+
+			$crypted = base64_encode($crypted);
+
+			return base64_encode(json_encode(array(
+				'value' => $crypted,
+				'sgn' => $this->sign($crypted)
+			)));
 		}
 		catch (Exception $ex)
 		{
