@@ -19,11 +19,6 @@ Add this line to Kohana::modules in your bootstrap.php:
 $encrypt = Encryption::instance();
 echo $encrypt->encode('This is my secret');
 ```
-* MCRYPT (AES-256-CBC)
-```sh
-$encrypt = Encryption::instance(Encryption::ENGINE_MCRYPT);
-echo $encrypt->encode('This is my secret');
-```
 * RSA
 ```sh
 $encrypt = Encryption::instance(Encryption::ENGINE_RSA);
