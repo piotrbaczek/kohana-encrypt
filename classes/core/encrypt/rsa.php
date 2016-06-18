@@ -46,6 +46,12 @@ class Core_Encrypt_Rsa extends Core_Encrypt_Engine {
 		else
 		{
 			$publickeyinfo = openssl_get_publickey($config['public']);
+			
+			if(!is_resource($publickeyinfo))
+			{
+				throw new Kohana_Exception('Public key is incorrectly formatted!');
+			}
+			
 			$public_key_data = openssl_pkey_get_details($publickeyinfo);
 
 			if (is_array($public_key_data) AND strpos($public_key_data['key'], '-----BEGIN PUBLIC KEY-----') !== FALSE)
@@ -65,6 +71,12 @@ class Core_Encrypt_Rsa extends Core_Encrypt_Engine {
 		else
 		{
 			$privatekeyinfo = openssl_pkey_get_private($config['private'], $this->_key);
+			
+			if(!is_resource($privatekeyinfo))
+			{
+				throw new Kohana_Exception('Private key is incorrectly formatted!');
+			}
+			
 			$private_key_data = openssl_pkey_get_details($privatekeyinfo);
 
 			if (is_array($private_key_data) AND strpos($private_key_data['key'], '-----BEGIN PUBLIC KEY-----') !== FALSE)
