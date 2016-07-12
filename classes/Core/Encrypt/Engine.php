@@ -4,7 +4,7 @@ defined('SYSPATH') or die('No direct script access.');
 
 abstract class Core_Encrypt_Engine {
 
-	private $_key;
+	protected $_key;
 	protected $_cipher;
 
 	abstract public function encode($message);
