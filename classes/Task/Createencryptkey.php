@@ -34,15 +34,26 @@ class Task_Createencryptkey extends Minion_Task {
 			Minion_CLI::write('Creating AES key.');
 
 			$aes_password = $this->RandomString(32);
-			
+
+			Minion_CLI::write('AES key created.');
+
 			$view = View::factory('createencryptkey')
 					->bind('aes_password', $aes_password)
-					->bind('rsa_password',$rsa_password)
+					->bind('rsa_password', $rsa_password)
 					->bind('rsa_publickey', $publickey)
-					->bind('rsa_privatekey',$privatekey)
+					->bind('rsa_privatekey', $privatekey)
 					->render();
 
-			file_put_contents(APPPATH.'config'.DIRECTORY_SEPARATOR.'encryption.php', $view);
+			$put_contents = file_put_contents(APPPATH.'config'.DIRECTORY_SEPARATOR.'encryption.php', $view);
+
+			if ($put_contents !== FALSE)
+			{
+				Minion_CLI::write('Saved both keys to: '.APPPATH.'config'.DIRECTORY_SEPARATOR.'encryption.php');
+			}
+			else
+			{
+				Minion_CLI::write('Could not save keys to APPPATH/config, most likely permissions issue.');
+			}
 		}
 	}
 
