@@ -32,9 +32,9 @@ class Core_Encrypt_Rsa extends Core_Encrypt_Engine {
 
 		if (!isset($config['key']) OR mb_strlen($config['key'], '8bit') != 32)
 		{
-			throw new Kohana_Exception(__CLASS__ . ' key is not set or length is different then :length. Private key must be password-protected, otherwise everyone with access to the file will be able to forge signatures.', array(
-		':length' => 32
-			));
+			throw new Kohana_Exception(
+				'Encrypt_RSA keys not set.  Run minion task \'createencryptkey\''
+			);
 		}
 
 		$this->_key = (String) $config['key'];
