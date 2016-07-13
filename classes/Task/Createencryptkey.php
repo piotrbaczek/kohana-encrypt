@@ -22,8 +22,6 @@ class Task_Createencryptkey extends Minion_Task {
 
 			$rsa = new phpseclib\Crypt\RSA();
 			$rsa->setPassword($rsa_password);
-			$rsa->setHash('sha512');
-			$rsa->setMGFHash('sha512');
 
 			extract($rsa->createKey(2048));
 

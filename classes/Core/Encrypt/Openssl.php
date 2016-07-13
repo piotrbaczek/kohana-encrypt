@@ -30,7 +30,7 @@ class Core_Encrypt_Openssl extends Core_Encrypt_Engine {
 
 		if (!isset($config['cipher']))
 		{
-			throw new Kohana_Exception(__CLASS__ . ' cipher is not set');
+			throw new Kohana_Exception('Encrypt_OPENSSL cipher key not set. Run minion task \'createencryptkey\'');
 		}
 
 		$cipher = (String) $config['cipher'];
