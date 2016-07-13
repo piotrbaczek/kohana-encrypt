@@ -12,7 +12,16 @@ Add this line to Kohana::modules in your bootstrap.php:
 ```sh
 'kohana-encrypt' => MODPATH . 'kohana-encrypt'
 ```
-
+Install phpseclib using composer
+```sh
+$ cd modules/kohana-encrypt
+$ composer install
+```
+Go to main directory, and generate AES and RSA keys for your application
+```sh
+$ cd ../..
+$ php index.php --uri=task/createencryptkey
+```
 ### Usage
 * OPENSSL (AES-256-CBC or AES-128-CBC)
 ```sh
@@ -26,7 +35,7 @@ echo $encrypt->encode('This is my secret');
 ```
 
 If you want to use this as default Encryption in your application,
-then add new file applications/classes/encrypt.php containing:
+then add new file applications/classes/Encrypt.php containing:
 
 ```sh
 <?php defined('SYSPATH') or die('No direct access allowed.');
