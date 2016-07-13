@@ -2,6 +2,11 @@
 
 defined('SYSPATH') or die('No direct script access.');
 
+/**
+ * Generates config file for the kohana-encrypt module
+ * Placing encryption.php in APPPATH/config
+ * @author Piotr Gołasz <pgolasz@gmail.com>
+ */
 class Task_Createencryptkey extends Minion_Task {
 
 	protected function _execute(array $params)
@@ -18,6 +23,8 @@ class Task_Createencryptkey extends Minion_Task {
 		{
 			Minion_CLI::write('Creating RSA encryption/decryption keys');
 
+			Minion_CLI::wait(2, TRUE);
+
 			$rsa_password = $this->RandomString(32);
 
 			$rsa = new phpseclib\Crypt\RSA();
@@ -25,15 +32,21 @@ class Task_Createencryptkey extends Minion_Task {
 
 			extract($rsa->createKey(2048));
 
-			Minion_CLI::write('password: '.$rsa_password);
-			Minion_CLI::write('pubkey: '.$publickey);
-			Minion_CLI::write('privkey: '.$privatekey);
+			Minion_CLI::write('RSA private key password:');
+			Minion_CLI::write($rsa_password);
+			Minion_CLI::write('RSA publickey:');
+			Minion_CLI::write($publickey);
+			Minion_CLI::write('RSA private key:');
+			Minion_CLI::write($privatekey);
 
 			Minion_CLI::write('Creating AES key.');
+			
+			Minion_CLI::wait(2, TRUE);
 
 			$aes_password = $this->RandomString(32);
 
 			Minion_CLI::write('AES key created.');
+			Minion_CLI::write('AES key: '.$aes_password);
 
 			$view = View::factory('createencryptkey')
 					->bind('aes_password', $aes_password)
@@ -55,9 +68,17 @@ class Task_Createencryptkey extends Minion_Task {
 		}
 	}
 
+	/**
+	 * Generates random non-cryptographicly-secure strings for key passwords
+	 * @author Piotr Gołasz <pgolasz@gmail.com>
+	 * @param integer $length
+	 * @return string
+	 */
 	private function RandomString($length = 10)
 	{
-		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_-+={}[]:"|\\<>?,./~`';
+		// https://www.owasp.org/index.php/Password_special_characters
+		// Use all US-keyboard characters (without single quote that messes up with string lengths)
+		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ !"#$%()*+,-./:;<=>?@[]^_`{|}~';
 		$charactersLength = strlen($characters);
 		$randomString = '';
 
