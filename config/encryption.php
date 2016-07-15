@@ -1,13 +1,15 @@
 <?php
 
 return array(
-	'openssl' => array(
-		'hash' => 'sha512',
-		'cipher' => 'AES-256-CBC',
-		'key' => NULL
+	'default' => array(
+		'type' => Encryption::ENGINE_AES,
+		'secretkey' => NULL,
+		'signingkey' => NULL,
+		'hash' => 'sha512'
 	),
-	'rsa' => array(
-		'key' => NULL,
+	'secondary' => array(
+		'type' => Encryption::ENGINE_RSA,
+		'secretkey' => NULL,
 		'hash' => 'sha512',
 		'public' => NULL,
 		'private' => NULL

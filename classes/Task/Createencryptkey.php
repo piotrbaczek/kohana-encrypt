@@ -22,44 +22,58 @@ class Task_Createencryptkey extends Minion_Task {
 		else
 		{
 			Minion_CLI::write('Creating RSA encryption/decryption keys');
+			$length = (int) Minion_CLI::read('Type length in bits of RSA key:', array(1024, 2048, 4096));
 
 			Minion_CLI::wait(2, TRUE);
 
-			$rsa_password = $this->RandomString(32);
+			$rsa_secretkey = $this->RandomString(32);
 
-			$rsa = new phpseclib\Crypt\RSA();
-			$rsa->setPassword($rsa_password);
+			$rsa = new \phpseclib\Crypt\RSA();
+			$rsa->setPassword($rsa_secretkey);
 
-			extract($rsa->createKey(2048));
+			extract($rsa->createKey($length));
+
+			$rsa_private = new \phpseclib\Crypt\RSA();
+			$rsa_private->setPassword($rsa_secretkey);
+			$rsa_private->loadKey($privatekey);
+			$privatekey = $rsa_private->getPrivateKey(\phpseclib\Crypt\RSA::PRIVATE_FORMAT_PKCS1);
+
+			$rsa_public = new \phpseclib\Crypt\RSA();
+			$rsa_public->loadKey($publickey);
+			$publickey = $rsa_public->getPublicKey(\phpseclib\Crypt\RSA::PUBLIC_FORMAT_PKCS1);
 
 			Minion_CLI::write('RSA private key password:');
-			Minion_CLI::write($rsa_password);
+			Minion_CLI::write($rsa_secretkey);
 			Minion_CLI::write('RSA publickey:');
 			Minion_CLI::write($publickey);
 			Minion_CLI::write('RSA private key:');
 			Minion_CLI::write($privatekey);
 
 			Minion_CLI::write('Creating AES key.');
-			
+
 			Minion_CLI::wait(2, TRUE);
 
-			$aes_password = $this->RandomString(32);
+			$aes_secretkey = $this->RandomString(32);
 
-			Minion_CLI::write('AES key created.');
-			Minion_CLI::write('AES key: '.$aes_password);
+			$aes_signingkey = $this->RandomString(32);
+
+			Minion_CLI::write('AES keys created.');
+			Minion_CLI::write('AES secret key: ' . $aes_secretkey);
+			Minion_CLI::write('AES signing key: ' . $aes_signingkey);
 
 			$view = View::factory('createencryptkey')
-					->bind('aes_password', $aes_password)
-					->bind('rsa_password', $rsa_password)
+					->bind('aes_secretkey', $aes_secretkey)
+					->bind('aes_signingkey', $aes_signingkey)
+					->bind('rsa_secretkey', $rsa_secretkey)
 					->bind('rsa_publickey', $publickey)
 					->bind('rsa_privatekey', $privatekey)
 					->render();
 
-			$put_contents = file_put_contents(APPPATH.'config'.DIRECTORY_SEPARATOR.'encryption.php', $view);
+			$put_contents = file_put_contents(APPPATH . 'config' . DIRECTORY_SEPARATOR . 'encryption.php', $view);
 
 			if ($put_contents !== FALSE)
 			{
-				Minion_CLI::write('Saved both keys to: '.APPPATH.'config'.DIRECTORY_SEPARATOR.'encryption.php');
+				Minion_CLI::write('Saved both keys to: ' . APPPATH . 'config' . DIRECTORY_SEPARATOR . 'encryption.php');
 			}
 			else
 			{

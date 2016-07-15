@@ -6,13 +6,15 @@ echo '<?php
 defined(\'SYSPATH\') or die(\'No direct script access.\');';
 echo "\r\n";
 echo "return array(
-	'openssl' => array(
-		'hash' => 'sha512',
-		'cipher' => 'AES-256-CBC',
-		'key' => '$aes_password'
+	'default' => array(
+		'type' => " . 'Encryption::ENGINE_AES' . ",
+		'secretkey' => '$aes_secretkey',
+		'signingkey' => '$aes_signingkey',
+		'hash' => 'sha512'
 	),
-	'rsa' => array(
-		'key' => '$rsa_password',
+	'secondary' => array(
+		'type' => " . 'Encryption::ENGINE_RSA' . ",
+		'secretkey' => '$rsa_secretkey',
 		'hash' => 'sha512',
 		'public' => '$rsa_publickey',
 		'private' => '$rsa_privatekey'
