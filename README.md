@@ -30,7 +30,7 @@ echo $encrypt->encode('This is my secret');
 ```
 * RSA
 ```sh
-$encrypt = Encryption::instance(Encryption::ENGINE_RSA);
+$encrypt = Encryption::instance('secondary');
 echo $encrypt->encode('This is my secret');
 ```
 
