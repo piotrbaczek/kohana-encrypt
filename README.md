@@ -1,5 +1,5 @@
 # kohana-encrypt
-Encryption module for Kohana 3.2. Port of Laravel Encrypt-then-MAC scheme for encrypting using OPENSSL and MCRYPT and RSA.
+Encryption module for Kohana 3.3. Port of Laravel Encrypt-then-MAC scheme for encrypting using OPENSSL (AES and RSA).
 Uses AES-256-CBC and AES-128-CBC, and user public and private keys with RSA.
 
 ### Installation
