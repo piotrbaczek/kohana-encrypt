@@ -22,7 +22,7 @@ class Task_Createencryptkey extends Minion_Task {
 		else
 		{
 			Minion_CLI::write('Creating RSA encryption/decryption keys');
-			$length = (int) Minion_CLI::read('Type length in bits of RSA key:', array(1024, 2048, 4096));
+			$length = (int) Minion_CLI::read('Type length in bits of RSA key:', array(2048, 4096));
 
 			Minion_CLI::wait(2, TRUE);
 
@@ -92,15 +92,7 @@ class Task_Createencryptkey extends Minion_Task {
 	{
 		// https://www.owasp.org/index.php/Password_special_characters
 		// Use all US-keyboard characters (without single quote that messes up with string lengths)
-		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ !"#$%()*+,-./:;<=>?@[]^_`{|}~';
-		$charactersLength = strlen($characters);
-		$randomString = '';
-
-		for ($i = 0; $i < (int) $length; $i++)
-		{
-			$randomString .= $characters[rand(0, $charactersLength - 1)];
-		}
-		return $randomString;
+		return Text::random('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ !"#$%()*+,-./:;<=>?@[]^_`{|}~', $length);
 	}
 
 }
