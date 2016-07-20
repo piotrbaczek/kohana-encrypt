@@ -87,7 +87,24 @@ class Core_Encrypt {
 	 */
 	private function __construct($name = NULL)
 	{
-		include_once Kohana::find_file('vendor', 'autoload');
+		if (!class_exists('phpseclib\Crypt\RSA'))
+		{
+			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Crypt', 'RSA');
+			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Crypt', 'Base');
+			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Crypt', 'Rijndael');
+			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Crypt', 'AES');
+			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Crypt', 'DES');
+			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Crypt', 'TripleDES');
+			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Crypt', 'Random');
+			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Math', 'BigInteger');
+			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Crypt', 'Hash');
+		}
+
+		if (!class_exists('phpseclib\Crypt\RSA'))
+		{
+			throw new Kohana_Exception('Class PHPSECLIB doesn\'t exist, you have to composer install in encrypt module.');
+		}
+
 		$config = Kohana::$config->load('encryption')->$name;
 
 		if ($config['type'] == self::ENGINE_AES)
@@ -344,7 +361,7 @@ class Core_Encrypt {
 	 */
 	private function hmac_sign_aes($iv, $value)
 	{
-		return hash_hmac($this->_hash, $iv . $value, $this->_signing_key);
+		return hash_hmac($this->_hash, $iv.$value, $this->_signing_key);
 	}
 
 	/**
