@@ -17,6 +17,7 @@ echo "return array(
 		'secretkey' => '$rsa_secretkey',
 		'hash' => 'sha512',
 		'public' => '$rsa_publickey',
-		'private' => '$rsa_privatekey'
+		'private' => '$rsa_privatekey',
+		'certificate' => '$rsa_certificate'
 	)
 );";
