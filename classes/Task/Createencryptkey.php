@@ -4,10 +4,23 @@ defined('SYSPATH') or die('No direct script access.');
 
 /**
  * Generates config file for the kohana-encrypt module
- * Placing encryption.php in APPPATH/config
+ * If option `module` is passed, then places it in MODPATH/`module`/config/encryption.php (This can be useful
+ * when developing multi-page applications)
+ * Otherwise uses standard APPPATH/config/encryption.php
+ * @example php index.php --task=createencryptkey
  * @author Piotr Gołasz <pgolasz@gmail.com>
  */
 class Task_Createencryptkey extends Minion_Task {
+
+	protected $_options = array(
+		'module' => NULL
+	);
+
+	public function build_validation(\Validation $validation)
+	{
+		return parent::build_validation($validation)
+						->rule('module', 'array_key_exists', array(':value', Kohana::modules()));
+	}
 
 	protected function _execute(array $params)
 	{
@@ -84,7 +97,7 @@ class Task_Createencryptkey extends Minion_Task {
 				$subject->setDNProp('streetaddress', $dn_prop_address);
 				$subject->setPublicKey($rsa_public);
 
-				$subject->setDNProp('id-at-serialNumber', hash('sha512', $dn_prop_idatorganization . Text::random(NULL, 24)));
+				$subject->setDNProp('id-at-serialNumber', hash('sha512', $dn_prop_idatorganization.Text::random(NULL, 24)));
 
 				$issuer = new \phpseclib\File\X509();
 				$issuer->setPrivateKey($rsa_private);
@@ -109,8 +122,8 @@ class Task_Createencryptkey extends Minion_Task {
 				$aes_signingkey = $this->RandomString(32);
 
 				Minion_CLI::write('AES keys created.');
-				Minion_CLI::write('AES secret key: ' . $aes_secretkey);
-				Minion_CLI::write('AES signing key: ' . $aes_signingkey);
+				Minion_CLI::write('AES secret key: '.$aes_secretkey);
+				Minion_CLI::write('AES signing key: '.$aes_signingkey);
 
 				$view = View::factory('createencryptkey')
 						->bind('aes_secretkey', $aes_secretkey)
@@ -121,15 +134,33 @@ class Task_Createencryptkey extends Minion_Task {
 						->bind('rsa_certificate', $rsa_certificate)
 						->render();
 
-				$put_contents = file_put_contents(APPPATH . 'config' . DIRECTORY_SEPARATOR . 'encryption.php', $view);
-
-				if ($put_contents !== FALSE)
+				if (!empty($params['module']))
 				{
-					Minion_CLI::write('Saved both keys to: ' . APPPATH . 'config' . DIRECTORY_SEPARATOR . 'encryption.php');
+					// Maybe this is multi-application, so you want to put it into module/core/config/
+					$put_contents = file_put_contents(MODPATH.$params['module'].DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'encryption.php', $view);
+
+					if ($put_contents !== FALSE)
+					{
+						Minion_CLI::write('Saved both keys to: '.MODPATH.$params['module'].DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'encryption.php');
+					}
+					else
+					{
+						Minion_CLI::write('Could not save keys to APPPATH/config, most likely permissions issue.');
+					}
 				}
 				else
 				{
-					Minion_CLI::write('Could not save keys to APPPATH/config, most likely permissions issue.');
+					// If config = 1 save to APPATH/config
+					$put_contents = file_put_contents(APPPATH.'config'.DIRECTORY_SEPARATOR.'encryption.php', $view);
+
+					if ($put_contents !== FALSE)
+					{
+						Minion_CLI::write('Saved both keys to: '.APPPATH.'config'.DIRECTORY_SEPARATOR.'encryption.php');
+					}
+					else
+					{
+						Minion_CLI::write('Could not save keys to APPPATH/config, most likely permissions issue.');
+					}
 				}
 			}
 		}
@@ -141,7 +172,7 @@ class Task_Createencryptkey extends Minion_Task {
 			}
 			else
 			{
-				Minion_CLI::write('General error occured: ' . $ex->getMessage());
+				Minion_CLI::write('General error occured: '.$ex->getMessage());
 			}
 		}
 	}
