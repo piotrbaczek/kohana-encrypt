@@ -145,12 +145,12 @@ class Task_Createencryptkey extends Minion_Task {
 					}
 					else
 					{
-						Minion_CLI::write('Could not save keys to APPPATH/config, most likely permissions issue.');
+						Minion_CLI::write('Could not save keys to '.MODPATH.$params['module'].DIRECTORY_SEPARATOR.'config, most likely permissions issue.');
 					}
 				}
 				else
 				{
-					// If config = 1 save to APPATH/config
+					// Save to module
 					$put_contents = file_put_contents(APPPATH.'config'.DIRECTORY_SEPARATOR.'encryption.php', $view);
 
 					if ($put_contents !== FALSE)
