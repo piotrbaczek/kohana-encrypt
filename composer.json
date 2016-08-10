@@ -1,4 +1,14 @@
 {
+	"name":"pgolasz/kohana-encrypt",
+	"description":"Encryption module for Kohana 3.3. Uses Encrypt-then-MAC scheme with OPENSSL (AES) and Encrypt-then-Sign (RSA).",
+	"homepage":"https://github.com/piotrgolasz/kohana-encrypt",
+	"licence":"MIT",
+	"keywords":["kohana","encryption","rsa","openssl","module"],
+	"authors":[{
+		"name":"Piotr Gołasz",
+		"email":"pgolasz@gmail.com",
+		"role":"Developer"
+	}],
 	"require": {
 		"phpseclib/phpseclib": "2.0.*"
 	}

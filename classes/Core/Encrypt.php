@@ -9,6 +9,11 @@ defined('SYSPATH') or die('No direct script access.');
 class Core_Encrypt {
 
 	/**
+	 * Version number
+	 */
+	CONST VERSION = '1.0.2';
+	
+	/**
 	 * Available Engines
 	 */
 	const ENGINE_AES = 'AES';
