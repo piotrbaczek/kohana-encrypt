@@ -4,7 +4,7 @@
  * Encryption class
  * @author Piotr Gołasz <pgolasz@gmail.com>
  */
-class Kohana_Encrypt implements Kohana_Encryptionengine
+class Kohana_Encrypt
 {
 
 	/**
@@ -15,8 +15,8 @@ class Kohana_Encrypt implements Kohana_Encryptionengine
 	/**
 	 * Available Engines
 	 */
-	const ENGINE_AES = 'AES';
-	const ENGINE_RSA = 'RSA';
+	const ENGINE_AES = 'aes';
+	const ENGINE_RSA = 'rsa';
 
 	/**
 	 * @var  string  default instance name
@@ -75,9 +75,11 @@ class Kohana_Encrypt implements Kohana_Encryptionengine
 			$name = self::$default;
 		}
 
+		$config = Kohana::$config->load('encrypt')->$name;
+
 		if (!isset(self::$instances[$name]))
 		{
-			$class = self::class;
+			$class = 'Kohana_Engine_' . Text::ucfirst($config['type']);
 
 			self::$instances[$name] = new $class($name);
 		}
@@ -97,86 +99,89 @@ class Kohana_Encrypt implements Kohana_Encryptionengine
 			throw new Kohana_Exception('phpseclib/phpseclib is required');
 		}
 
-		$config = Kohana::$config->load('encryption')->$name;
+		$config = Kohana::$config->load('encrypt')->$name;
 
-		if ($config['type'] == self::ENGINE_AES)
-		{
-			$hash = $config['hash'];
-			if (!in_array($hash, array('sha256', 'sha384', 'sha512')))
-			{
-				$this->_hash = 'sha512';
-			}
-			else
-			{
-				$this->_hash = $hash;
-			}
+		var_dump($config);
+		die();
 
-			$this->_secret_key_length = self::supported($config['secretkey'], $config['type']);
-			if ($this->_secret_key_length > 0)
-			{
-				$this->_encoder = new phpseclib\Crypt\AES(\phpseclib\Crypt\AES::MODE_CBC);
-				$this->_encoder->setPassword($config['secretkey'], 'pbkdf2', $this->_hash, NULL, 4096);
-				$this->_encoder->setPreferredEngine(\phpseclib\Crypt\AES::ENGINE_OPENSSL);
-				$this->_encoder->setKeyLength($this->_secret_key_length * 8);
-			}
-			else
-			{
-				throw new Kohana_Exception('Secret key for AES must be 16 or 32 characters long, provided one is :long long.', array(
-			':long' => self::key_length($config['secretkey'])
-				));
-			}
-
-			$this->_signing_key_length = self::supported($config['signingkey'], $config['type'], 32);
-			if ($this->_signing_key_length > 0)
-			{
-				$this->_signing_key = $config['signingkey'];
-			}
-			else
-			{
-				throw new Kohana_Exception('Signing key for AES must be 32 characters long, provided one is :long long.', array(
-			':long' => self::key_length($config['signingkey'])
-				));
-			}
-		}
-		elseif ($config['type'] == self::ENGINE_RSA)
-		{
-			$hash = $config['hash'];
-			if (!in_array($hash, array('sha256', 'sha384', 'sha512')))
-			{
-				$this->_hash = 'sha512';
-			}
-			else
-			{
-				$this->_hash = $hash;
-			}
-
-			$this->_secret_key_length = $this->key_length($config['secretkey']);
-
-			$this->_encoder = new \phpseclib\Crypt\RSA();
-			$this->_encoder->setPassword($config['secretkey']);
-			if ($this->_encoder->loadKey($config['private']) === false)
-			{
-				throw new Kohana_Exception('Private key is invalid');
-			}
-			$this->_encoder->setHash($this->_hash);
-			$this->_encoder->setMGFHash($this->_hash);
-			$this->_encoder->setEncryptionMode(\phpseclib\Crypt\RSA::ENCRYPTION_OAEP);
-			$this->_encoder->setSignatureMode(\phpseclib\Crypt\RSA::SIGNATURE_PSS);
-
-			$this->_decoder = new \phpseclib\Crypt\RSA();
-			if ($this->_decoder->loadKey($config['public']) === false)
-			{
-				throw new Kohana_Exception('Public key is invalid.');
-			}
-			$this->_decoder->setHash($this->_hash);
-			$this->_decoder->setMGFHash($this->_hash);
-			$this->_decoder->setEncryptionMode(\phpseclib\Crypt\RSA::ENCRYPTION_OAEP);
-			$this->_decoder->setSignatureMode(\phpseclib\Crypt\RSA::SIGNATURE_PSS);
-		}
-		else
-		{
-			throw new Kohana_Exception('type must be one of provided types');
-		}
+//		if ($config['type'] == self::ENGINE_AES)
+//		{
+//			$hash = $config['hash'];
+//			if (!in_array($hash, array('sha256', 'sha384', 'sha512')))
+//			{
+//				$this->_hash = 'sha512';
+//			}
+//			else
+//			{
+//				$this->_hash = $hash;
+//			}
+//
+//			$this->_secret_key_length = self::supported($config['secretkey'], $config['type']);
+//			if ($this->_secret_key_length > 0)
+//			{
+//				$this->_encoder = new phpseclib\Crypt\AES(\phpseclib\Crypt\AES::MODE_CBC);
+//				$this->_encoder->setPassword($config['secretkey'], 'pbkdf2', $this->_hash, NULL, 4096);
+//				$this->_encoder->setPreferredEngine(\phpseclib\Crypt\AES::ENGINE_OPENSSL);
+//				$this->_encoder->setKeyLength($this->_secret_key_length * 8);
+//			}
+//			else
+//			{
+//				throw new Kohana_Exception('Secret key for AES must be 16 or 32 characters long, provided one is :long long.', array(
+//			':long' => self::key_length($config['secretkey'])
+//				));
+//			}
+//
+//			$this->_signing_key_length = self::supported($config['signingkey'], $config['type'], 32);
+//			if ($this->_signing_key_length > 0)
+//			{
+//				$this->_signing_key = $config['signingkey'];
+//			}
+//			else
+//			{
+//				throw new Kohana_Exception('Signing key for AES must be 32 characters long, provided one is :long long.', array(
+//			':long' => self::key_length($config['signingkey'])
+//				));
+//			}
+//		}
+//		elseif ($config['type'] == self::ENGINE_RSA)
+//		{
+//			$hash = $config['hash'];
+//			if (!in_array($hash, array('sha256', 'sha384', 'sha512')))
+//			{
+//				$this->_hash = 'sha512';
+//			}
+//			else
+//			{
+//				$this->_hash = $hash;
+//			}
+//
+//			$this->_secret_key_length = $this->key_length($config['secretkey']);
+//
+//			$this->_encoder = new \phpseclib\Crypt\RSA();
+//			$this->_encoder->setPassword($config['secretkey']);
+//			if ($this->_encoder->loadKey($config['private']) === false)
+//			{
+//				throw new Kohana_Exception('Private key is invalid');
+//			}
+//			$this->_encoder->setHash($this->_hash);
+//			$this->_encoder->setMGFHash($this->_hash);
+//			$this->_encoder->setEncryptionMode(\phpseclib\Crypt\RSA::ENCRYPTION_OAEP);
+//			$this->_encoder->setSignatureMode(\phpseclib\Crypt\RSA::SIGNATURE_PSS);
+//
+//			$this->_decoder = new \phpseclib\Crypt\RSA();
+//			if ($this->_decoder->loadKey($config['public']) === false)
+//			{
+//				throw new Kohana_Exception('Public key is invalid.');
+//			}
+//			$this->_decoder->setHash($this->_hash);
+//			$this->_decoder->setMGFHash($this->_hash);
+//			$this->_decoder->setEncryptionMode(\phpseclib\Crypt\RSA::ENCRYPTION_OAEP);
+//			$this->_decoder->setSignatureMode(\phpseclib\Crypt\RSA::SIGNATURE_PSS);
+//		}
+//		else
+//		{
+//			throw new Kohana_Exception('type must be one of provided types');
+//		}
 	}
 
 	/**
@@ -356,40 +361,7 @@ class Kohana_Encrypt implements Kohana_Encryptionengine
 		return hash_hmac($this->_hash, $iv . $value, $this->_signing_key);
 	}
 
-	/**
-	 * Checks if key length for AES is supported
-	 * @param String $key
-	 * @param String $engine
-	 * @param int $forced_value
-	 * @return int
-	 */
-	public static function supported($key, String $engine, int $forced_value = NULL): int
-	{
-		$length = mb_strlen($key, '8bit');
-
-		if ($engine == self::ENGINE_AES)
-		{
-			return is_null($forced_value) ? ($length === 16 || $length === 32 ? $length : -1) : ($length === $forced_value ? $length : -1);
-		}
-		elseif ($engine == self::ENGINE_RSA)
-		{
-			return is_null($forced_value) ? ($length === 32 ? $length : -1) : ($length === $forced_value ? $length : -1);
-		}
-		else
-		{
-			return -1;
-		}
-	}
-
-	/**
-	 * Returns $key keylength
-	 * @param String $key
-	 * @return int
-	 */
-	public static function key_length($key)
-	{
-		return mb_strlen($key, '8bit');
-	}
+	
 
 	/**
 	 * 
