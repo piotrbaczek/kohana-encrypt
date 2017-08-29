@@ -22,6 +22,15 @@ Go to main directory, and generate AES and RSA keys for your application
 $ cd ../..
 $ php index.php --uri=task/encyptkeys
 ```
+
+It's also possible to generate config inside common module of your application
+For example if your core classes are located in /modules/custommodule/classes,
+then config will be generated in /modules/custom/config
+```sh
+$ cd ../..
+$ php index.php --uri=task/encyptkeys --module=custommodule
+```
+
 ### Usage
 * OPENSSL (AES-256-CBC or AES-128-CBC)
 ```sh
