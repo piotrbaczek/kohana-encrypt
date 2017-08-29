@@ -1,18 +1,17 @@
 <?php
 
-defined('SYSPATH') or die('No direct script access.');
-
 /**
  * Encryption class
  * @author Piotr Gołasz <pgolasz@gmail.com>
  */
-class Core_Encrypt {
+class Kohana_Encrypt implements Kohana_Encryptionengine
+{
 
 	/**
 	 * Version number
 	 */
-	CONST VERSION = '1.0.2';
-	
+	CONST VERSION = '1.0.3';
+
 	/**
 	 * Available Engines
 	 */
@@ -92,22 +91,10 @@ class Core_Encrypt {
 	 */
 	private function __construct($name = NULL)
 	{
-		if (!class_exists('phpseclib\Crypt\RSA'))
-		{
-			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Crypt', 'RSA');
-			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Crypt', 'Base');
-			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Crypt', 'Rijndael');
-			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Crypt', 'AES');
-			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Crypt', 'DES');
-			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Crypt', 'TripleDES');
-			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Crypt', 'Random');
-			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Math', 'BigInteger');
-			include_once Kohana::find_file('vendor/phpseclib/phpseclib/phpseclib/Crypt', 'Hash');
-		}
 
 		if (!class_exists('phpseclib\Crypt\RSA'))
 		{
-			throw new Kohana_Exception('Class PHPSECLIB doesn\'t exist, you have to composer install in encrypt module.');
+			throw new Kohana_Exception('phpseclib/phpseclib is required');
 		}
 
 		$config = Kohana::$config->load('encryption')->$name;
@@ -195,10 +182,10 @@ class Core_Encrypt {
 	/**
 	 * Encode data using Encrypt-then-MAC scheme with AES
 	 * and Encrypt-then-Sign with RSA
-	 * @param string $message
+	 * @param String $message
 	 * @return boolean
 	 */
-	public function encode($message)
+	public function encrypt(String $message)
 	{
 		if ($this->_encoder instanceof phpseclib\Crypt\AES)
 		{
@@ -239,10 +226,10 @@ class Core_Encrypt {
 
 	/**
 	 * Verify hmac/signature and decrypt data
-	 * @param string $ciphertext
+	 * @param String $ciphertext
 	 * @return boolean
 	 */
-	public function decode($ciphertext)
+	public function decrypt(String $ciphertext)
 	{
 		if ($this->_encoder instanceof phpseclib\Crypt\AES)
 		{
@@ -280,10 +267,10 @@ class Core_Encrypt {
 
 	/**
 	 * Validates payload with RSA
-	 * @param string $ciphertext
+	 * @param String $ciphertext
 	 * @return boolean
 	 */
-	private function get_payload_rsa($ciphertext)
+	private function get_payload_rsa(String $ciphertext)
 	{
 		$payload = json_decode(base64_decode($ciphertext), true);
 		if (!$payload || $this->invalid_payload_rsa($payload))
@@ -299,10 +286,10 @@ class Core_Encrypt {
 
 	/**
 	 * Validates payload with AES
-	 * @param string $ciphertext
+	 * @param String $ciphertext
 	 * @return boolean
 	 */
-	private function get_payload_aes($ciphertext)
+	private function get_payload_aes(String $ciphertext)
 	{
 		$payload = json_decode(base64_decode($ciphertext), true);
 		if (!$payload || $this->invalid_payload_aes($payload))
@@ -318,10 +305,10 @@ class Core_Encrypt {
 
 	/**
 	 * Validates payload structure with AES
-	 * @param array $payload
-	 * @return boolean
+	 * @param Array $payload
+	 * @return bool
 	 */
-	private function invalid_payload_aes($payload)
+	private function invalid_payload_aes(array $payload): bool
 	{
 		return !is_array($payload) || !isset($payload['iv']) || !isset($payload['value']) || !isset($payload['mac']);
 	}
@@ -329,9 +316,9 @@ class Core_Encrypt {
 	/**
 	 * Validates payload structure with RSA
 	 * @param array $payload
-	 * @return boolean
+	 * @return bool
 	 */
-	private function invalid_payload_rsa($payload)
+	private function invalid_payload_rsa(array $payload): bool
 	{
 		return !is_array($payload) || !isset($payload['sgn']) || !isset($payload['value']);
 	}
@@ -339,9 +326,9 @@ class Core_Encrypt {
 	/**
 	 * Verifies RSA signature
 	 * @param array $payload
-	 * @return boolean
+	 * @return bool
 	 */
-	private function valid_sgn($payload)
+	private function valid_sgn(Array $payload): bool
 	{
 		return $this->_decoder->verify(base64_decode($payload['value']), base64_decode($payload['sgn']));
 	}
@@ -349,9 +336,9 @@ class Core_Encrypt {
 	/**
 	 * Verifies AES hmac signature
 	 * @param array $payload
-	 * @return boolean
+	 * @return bool
 	 */
-	private function valid_mac($payload)
+	private function valid_mac(Array $payload): bool
 	{
 		$bytes = phpseclib\Crypt\Random::string(16);
 		$calcMac = hash_hmac($this->_hash, $this->hmac_sign_aes($payload['iv'], $payload['value']), $bytes, true);
@@ -366,17 +353,17 @@ class Core_Encrypt {
 	 */
 	private function hmac_sign_aes($iv, $value)
 	{
-		return hash_hmac($this->_hash, $iv.$value, $this->_signing_key);
+		return hash_hmac($this->_hash, $iv . $value, $this->_signing_key);
 	}
 
 	/**
 	 * Checks if key length for AES is supported
-	 * @param string $key
-	 * @param string $engine
-	 * @param integer $forced_value
-	 * @return integer
+	 * @param String $key
+	 * @param String $engine
+	 * @param int $forced_value
+	 * @return int
 	 */
-	public static function supported($key, $engine, $forced_value = NULL)
+	public static function supported($key, String $engine, int $forced_value = NULL): int
 	{
 		$length = mb_strlen($key, '8bit');
 
@@ -396,12 +383,21 @@ class Core_Encrypt {
 
 	/**
 	 * Returns $key keylength
-	 * @param string $key
-	 * @return integer
+	 * @param String $key
+	 * @return int
 	 */
 	public static function key_length($key)
 	{
 		return mb_strlen($key, '8bit');
+	}
+
+	/**
+	 * 
+	 * @inheritdoc
+	 */
+	public function __toString()
+	{
+		return 'Encrypt (' . get_class($this->_encoder) . ')';
 	}
 
 }
