@@ -17,6 +17,9 @@ Install phpseclib using composer
 $ cd modules/kohana-encrypt
 $ composer install
 ```
+
+Include autoload.php in your bootstrap.php
+
 Go to main directory, and generate AES and RSA keys for your application
 ```sh
 $ cd ../..
