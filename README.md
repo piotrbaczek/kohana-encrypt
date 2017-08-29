@@ -20,27 +20,18 @@ $ composer install
 Go to main directory, and generate AES and RSA keys for your application
 ```sh
 $ cd ../..
-$ php index.php --uri=task/createencryptkey
+$ php index.php --uri=task/encyptkeys
 ```
 ### Usage
 * OPENSSL (AES-256-CBC or AES-128-CBC)
 ```sh
-$encrypt = Encryption::instance();
-echo $encrypt->encode('This is my secret');
+$encrypt = Encrypt::instance();
+echo $encrypt->encrypt('This is my secret');
 ```
 * RSA
 ```sh
-$encrypt = Encryption::instance('secondary');
-echo $encrypt->encode('This is my secret');
-```
-
-If you want to use this as default Encryption in your application,
-then add new file applications/classes/Encrypt.php containing:
-
-```sh
-<?php defined('SYSPATH') or die('No direct access allowed.');
-
-public class Encrypt extends Encryption{}
+$encrypt = Encrypt::instance('secondary');
+echo $encrypt->encrypt('This is my secret');
 ```
 
 License
