@@ -14,15 +14,19 @@ Add this line to Kohana::modules in your bootstrap.php:
 ```
 Install phpseclib using composer
 ```sh
-$ cd modules/kohana-encrypt
 $ composer install
 ```
 
 Include autoload.php in your bootstrap.php
+```
+/**
+ * Enable composer autoload libraries
+ */
+require APPPATH . '../vendor/autoload.php';
+```
 
-Go to main directory, and generate AES and RSA keys for your application
+Generate AES and RSA keys for your application
 ```sh
-$ cd ../..
 $ php index.php --uri=task/encyptkeys
 ```
 
